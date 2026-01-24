@@ -7,17 +7,17 @@ Obs: Será utilizada a imagem (NÃO OFICIAL) cirrusci/flutter:stable por ser a m
 ```
 # Função para o Flutter (substitui o alias antigo)
 d-flutter() {
-    docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:stable flutter "$@" && sudo chown -R $USER:$USER .
+    docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:3.38.6 flutter "$@" && sudo chown -R $USER:$USER .
 }
 
 # Função para o Dart
 d-dart() {
-    docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:stable dart "$@" && sudo chown -R $USER:$USER .
+    docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:3.38.6 dart "$@" && sudo chown -R $USER:$USER .
 }
 
 # Abre um terminal interativo (Bash) dentro do ambiente Flutter
 # Entrar como root para ter poder total dentro do container
-alias d-shell='docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:stable bash'
+alias d-shell='docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:3.38.6 bash'
 ```
 Explicação do principais parâmetros:
 * `-u $(id -u):$(id -g)`: Faz com que os arquivos criados pelo Docker pertença ao seu usuário da máquina e não ao root do container.
@@ -50,7 +50,7 @@ Obs 2: Quando manipular o projeto dentro do container, você deverá executar `s
 ```
 {
   "name": "Flutter Dev Container",
-  "image": "cirrusci/flutter:stable",
+  "image": "cirrusci/flutter:3.38.6",
   "remoteUser": "root",
   "workspaceFolder": "/app",
   "mounts": [
@@ -104,7 +104,7 @@ Este Dockerfile foi adaptado para gerar builds leves utilizando Multi-stage Buil
 # Define a imagem base
 # Flutter e Dart instalados
 # Atribui apelido 'build' para captura de dados
-FROM cirrusci/flutter:stable AS build
+FROM cirrusci/flutter:3.38.6 AS build
 
 # Cria e entra na pasta /app dentro do container
 # Todas as atividades acontecerão neste diretório
