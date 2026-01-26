@@ -5,19 +5,25 @@ Este guia documenta o processo de utilização de um container docker para isola
 Será criada uma alias para criar um apelido ao comando e facilitar o uso no terminal (`.bashrc` ou `zshrc`).
 Obs: Será utilizada a imagem (NÃO OFICIAL) cirrusci/flutter:stable por ser a mais estável e mantida para ambientes de CI/CD e Docker.
 ```
-# Função para o Flutter (substitui o alias antigo)
+# Função padrão para o dia a dia
 d-flutter() {
-    docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:3.38.6 flutter "$@" && sudo chown -R $USER:$USER .
+    docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:stable flutter "$@" && sudo chown -R $USER:$USER .
 }
 
-# Função para o Dart
-d-dart() {
-    docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:3.38.6 dart "$@" && sudo chown -R $USER:$USER .
+# Função para atualizar a imagem oficial e limpar tudo (O "Reset de Fábrica")
+# Use isso sempre que aparecerem erros bizarros de Matrix4 ou SDK
+d-flutter-update() {
+    echo "Atualizando imagem Docker do Flutter Stable..."
+    docker pull cirrusci/flutter:stable
+    echo "Limpando caches locais do projeto..."
+    rm -rf .dart_tool/ build/ pubspec.lock
+    docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:stable flutter doctor
 }
 
-# Abre um terminal interativo (Bash) dentro do ambiente Flutter
-# Entrar como root para ter poder total dentro do container
-alias d-shell='docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:3.38.6 bash'
+d-shell() {
+    docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:stable bash && sudo chown -R $USER:$USER .
+}
+
 ```
 Explicação do principais parâmetros:
 * `-u $(id -u):$(id -g)`: Faz com que os arquivos criados pelo Docker pertença ao seu usuário da máquina e não ao root do container.
