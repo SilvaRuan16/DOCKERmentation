@@ -1,103 +1,21 @@
 # Ferramentas Dockerizadas para Backend
-Esta parte do guia mostrará como criar ambientes dockerizados para desenvolvimento, build e execução de suas aplicações, sendo as ferramentas mencionadas: Java, Python e Dart.
+Esta parte do guia mostrará como criar ambientes dockerizados para desenvolvimento, build e execução de suas aplicações, sendo as ferramentas mencionadas: Java  na versão 21.
 
 ## Java
 Java é uma linguagem de programação orientada a objetos fortemente tipada, suas principais caracteristicas são sua segurança e robustez, desempenho, independente de plataforma e como mencionada anteriormente, orientação a objetos.
 
-## 1. Configuração do ambiente CLI
-Será criada uma função para facilitar a execução dos programas no terminal (`.bashrc` ou `zshrc`).
-```
-# Função para utilizar no dia a dia
-d-java() {
-  docker run -it --rm \
-  -v "$(pwd)":/app \
-  -v "$HOME/.m2":/root/.m2 \
-  -w /app \
-  maven:3.9-eclipse-temurin-21 bash
-}
+## Criar projeto Java
+Acesse este site para criar o projeto: [Spring Initializr](https://start.spring.io/).
+obs: Esta documentação foi pensada para a versão 21 do Java junto ao Maven e Spring Boot.
 
-# Método para criar um projeto Java puro com Maven
-d-jamaven-init() {
-  docker run -it --rm \
-    -v "$(pwd)":/app \
-    -w /app \
-    maven:3.9-eclipse-temurin-21 \
-    mvn archetype:generate \
-    -DgroupId=com.meuprojeto \
-    -DartifactId="$1" \
-    -DarchetypeArtifactId=maven-archetype-quickstart \
-    -DinteractiveMode=false
-}
+## Dockerfile para aplicações em Java e Desenvolvendo com VS Code (Extensão: Dev Containers) e Intelij (Docker)
+Nesta etapa, mostraremos como usar o docker para desenvolvimento, build e execução.
 
-# Método para criar um projeto Java com Spring Boot
-d-javaspring-init() {
-  docker run -it --rm \
-  -v "$(pwd)":/app \
-  -w /app \
-  alpine:latest \
-  sh -c "apk add --no-cache curl unzip && \
-  curl https://start.spring.io/starter.zip \
-  -d javaVersion=21 \
-  -d type=maven-project \
-  -d name=$1 \
-  -d artifactId=$1 \
-  -o project.zip && \
-  unzip project.zip -d $1 && \
-  rm project.zip"
-}
-```
-### Explicação dos trechos do comando docker:
-#### `d-java`
-* `-it`: Mantém o terminal interativo para utilizar o bash.
-* `--rm`: Remove o container de forma automática assim que o usuário sair dele, mantendo o seu sistema limpo.
-* `-v "$(pwd)":/app`: Monta sua pasta atual no diretório `/app` do contaiener.
-* `-v "$HOME/.m2":/root/.m2`: Compartilha o cache do maven para não precisar baixar todas as dependências do zero todas as vezes.
-* `-w /app`: Define o diretório de trabalho inicial como `/app`.
-* `maven:3.9-eclipse-temurin-21`: Utiliza uma imagem oficial do OpenJDK 21 com o pacote Maven.
+Para prosseguir, será necessário baixar as extensões mostradas no titulo do capitulo.
 
-Após isso, você poderá executar esse comando toda vez que for escrito `d-java`.
-
-#### `d-jamaven-init`
-* `docker run -it --rm`: Executa o docker abrindo um terminal no modo interativo e garante que o container seja deletado após terminar de gerar o projeto, para garantir que não fique com containers "mortos" na máquina física.
-* `-v "$(pwd)":/app`: Conecta sua pasta atual da máquina fisica ao diretório `/app` dentro do container.
-* `-w /app`: Define que os comandos serão executados dentro da pasta `/app`.
-* `maven:3.9-eclipse-temurin-21`: Imagem oficial que contém o Maven na versão `3.9` e o Java `21 (Temurin)`.
-* `mvn archetype:generate`: Responsável por criar uma planta baixa do projeto:
-  * `archetype:generate`: É o plugin do Maven que gera projetos a partir de modelos arquétipos.
-  * `-DgroupId=com.meuprojeto`: Define o RG da sua organização ou pacote principal. Ex: `com.google`, `org.apache`.
-  * `-DartifactId="$1"`: Define o nome do projeto/pasta capturando o primeiro nome digitado após o comando. Ex: `d-jamaven-init meu-app`.
-  * `-DarchetypeArtifactId=maven-archetype-quickstart`: Seleciona o modelo Quickstart, que cria a estrutura básica:
-    * `src/main/java`: Para o código.
-    * `src/test/java`: Para o testes.
-    * `pom.xml`: Gerenciador de dependências do projeto.
-  * `-DinteractiveMode=false`: Impede que o Maven fique fazendo perguntas durante a criação do projeto. Assume os valores padrão e termina o trabalho sozinho.
-
-Após isso, você poderá criar projetos utilizando `d-jamaven-init meu-projeto-estudo`.
-
-#### `d-javaspring-init`
-* `docker run -it --rm`: Executa o docker abrindo um terminal no modo interativo e garante que o container seja deletado após terminar de gerar o projeto, para garantir que não fique com containers "mortos" na máquina física.
-* `-v "$(pwd)":/app`: Conecta sua pasta atual da máquina fisica ao diretório `/app` dentro do container.
-* `-w /app`: Define que os comandos serão executados dentro da pasta `/app`.
-* `alpine:latest`: Usa uma imagem extremamente leve da Alpine Linux para fazer uma assistencia no download e extração do projeto.
-* `sh -c`: A imagem do Alpine é minimalista, portanto não possui ferramentas de rede por padrão.
-* `apk add --no-cache curl unzip`: É feito feito a instalação do `curl` e `unzip` pelo gerenciador de pacotes do Alpine (apk). A flag `--no-cache` serve para evitar acúmulo de arquivos temporários de instalação.
-* `https://start.spring.io/starter.zip`: Endpoint que gera o arquivo .zip do projeto.
-* `-d javaVersion=21`: Informa que será usado o Java 21 no projeto, esta informação fica armazenada no `pom.xml`.
-* `-d type=maven-project`: Utiliza a estrutura de projeto Maven.
-* `-d nome=$1` e `-d artifactId=$1`: Utiliza o nome passado no argumento para nomear o projeto quando chama a função `d-javaspring-init`. Ex: `d-javaspring-init meu-projeto`.
-* `-o project.zip`: Salva o arquivo baixado com o nome temporário project.zip.
-* `unzip project.zip -d $1`: Extrai todo o conteúdo do arquivo baixado para uma nova pasta com o nome do seu projeto.
-* `rm project.zip`: Remove o arquivo compactado para não deixar lixo na pasta.
-
-## Dockerfile para aplicações em Java e Desenvolvendo com VS Code (Extensão: Dev Containers)
-No conteúdo mostrado logo acima, foi fornecido o ambiente de desenvolvimento Java sem ter essas ferramentas necessáriamente baixadas em sua máquina física. Agora será mostrado o passo a passo de como Buildar e Rodar uma aplicação Java atráves do Dockerfile.
-
-É recomendado instalar a extensão `Dev Containers` para ter acesso a suporte da IDE (Autocomplete, Refatoração e Linting).
-
-### Configuração do Projeto (Via terminal do container)
-* #### 1. Crie uma pasta chamada `.devcontainer` na raiz do seu projeto usando: `mkdir .devcontainer && cd ./.devcontainer`.
-* #### 2. Crie o arquivo `devcontainer.json` dentro do diretório .devcontainer usando: `touch devcontainer.json` e depois `nano devcontainer.json` ou somente o `nano devcontainer.json`.
-* #### 3. Note que o seu usuário externo não tem permissão para escrever arquivos, então no terminal dentro do container, no usuário root, execute estes comandos para conseguir escrever e modificar arquivos (Manutenção rápida via terminal do container. `apt update && apt install nano -y`). Obs: Como o container usa a flag --rm, qualquer ferramenta instalada via apt será removida assim que fechar o terminal (exit).
+### Configuração do Projeto
+* #### 1. Crie uma pasta chamada `.devcontainer` na raiz do seu projeto.
+* #### 2. Crie o arquivo `devcontainer.json` dentro do diretório .devcontainer.
 * #### 3. Coloque este código abaixo dentro do arquivo `devcontainer.json`:
 ```
 {
@@ -130,13 +48,11 @@ No conteúdo mostrado logo acima, foi fornecido o ambiente de desenvolvimento Ja
 
 ```
 ### Como utilizar:
-* Abra o projeto no Vs Code ou no terminal fora do container, vá para o caminho do projeto espelhado e use o comando `code .` para abrir o vscode.
-* Agora, você tem 3 opções de abrir o container do projeto no vscode:
-  * Forma A (Quadrado azul): No canto inferior esquerdo do seu Vs code, existe um ícone azul (parece um ><). Clique nele e selecione "Reopen in Container".
-  * Forma B (O atalho): Aperte Ctrl + Shift + P e digite: `Dev Containers: Reopen in Container`.
-  * Forma C (A notificação): Se o arquivo .devcontainer estiver no projeto, o Vscode costuma mostrar um balão no canto inferior direito dizendo: "Folder contains a Dev Container configuration file. Reopen to develop in a container?". Clique em `Reopen`.
+* Abra o projeto no Vs Code ou no Intelij.
+* Possue várias formas de abrir o projeto do container na IDE, mas será mostrado somente um deles pois é o mais fácil:
+  * Notificação: Se o arquivo .devcontainer estiver no projeto, a IDE costuma mostrar um balão no canto inferior direito dizendo: "Folder contains a Dev Container configuration file. Reopen to develop in a container?". Clique em `Reopen in Container`.
 * Como saber se deu certo? Se você abrir o terminal do vscode e notar que o prompt for algo assim `root@f1234567:/app#` em vez de `(seu-usuario@seu-usuario)`. Significa que deu certo.
-* Vs Code agora opera de dentro do container com todas as ferramentas instaladas.
+* Agora a IDE opera de dentro do container com todas as ferramentas instaladas.
 
 ## Build Final Dockerfile para produção
 Para diminuir o tamanho da imagem ao buildar a aplicação, será seguida passo a passo do Dockerfile Multi-Stage seguindo a lógica: "Você desenvolve no container pesado (JDK), mas gera uma imagem final leve (JRE) que conterá apenas o necessário para rodar a aplicação."
@@ -179,75 +95,22 @@ EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
-Obs: É necessário ter atenção em relação ao .mvnw, pois como a proposta desta documentação é fornecer os materiais de desenvolvimento tendo a máquina completamente limpa, certamente você não terá o Maven instalado. Será necessário verificar se estes arquivos estão no seu projeto (`mvnw`, `mvnw.cmd` e a pasta `.mvn`).
-<br><br>
-Se você não tiver esses arquivos, será possível rodar este comando abaixo para gera-los uma única vez usando o container de desenvolvimento. <br>
-`docker run -it --rm -v "$(pwd)":/app -w /app eclipse-temurin:21-jdk sh -c "apt update && apt install maven -y && mvn wrapper:wrapper"`
 
 ## Buildar e Rodar
-Antes de buildar e rodar a aplicação, será preciso atualizar o arquivo `pom.xml`, pois durante o processo de criação do projeto, foi configurado para gerar um template mais básico possivel padrão do Maven, oque resultou em conflitos entre o jdk-21 e outros parametros do arquivo. Para corrigir isto, basta substituir o pom.xml padrão que foi gerado por este novo arquivo: <br>
-```
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  
-  <groupId>com.meuprojeto</groupId>
-  <artifactId>dkjmaven</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
-
-  <properties>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>5.10.0</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.3.0</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <mainClass>com.meuprojeto.App</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-</project>
-```
-Após fazer a alteração, navege até a raiz do seu projeto onde está o Dockerfile e execute este comando: <br>
-`docker build -t meu-app-java .`
+Navege até a raiz do seu projeto onde está o Dockerfile e execute este comando: <br>
+`docker build -t <nome_imagem_build> .`
 
 * `build`: Cria uma nova imagem a partir de um arquivo (Dockerfile).
-* `-t meu-app-java`: Atribui um nome (tag) para a imagem criada para que não precise gerenciar ela pelo o ID.
+* `-t <nome_imagem_build>`: Atribui um nome personalizado (tag) para a imagem criada a fim de não gerenciar ela pelo o ID.
 * `.`: Indica que o contexto do build (arquivos src, pom.xml, outros) está na pasta atual.
 
 Após o build terminar, você poderá subir o container usando o comando: <br>
-`docker run -it --rm --name app-terminal meu-app-java`
+* Rodar localmente via terminal: `docker run -it --rm --name <nome_container> <nome_imagem_build>`
+* Rodar via Servidor (Web): `docker run -p 8080:8080 --rm --name <nome_container> <nome_imagem_build>`
 
 * `run`: Cria e inicia um container a partir de uma imagem.
 * `-it`: Cria um terminal interativo.
 * `--rm`: Deleta o container assim que encerrado.
-* `--name app-terminal`: Atribui um nome específico ao container rodando. Ex: Nome do container => `app-terminal`
-* `meu-app-java`: Indica a imagem que deve ser utilizada para criar o container.
+* `--name <nome_container>`: Atribui um nome específico ao container rodando. Ex: Nome do container => `app-terminal`
+* `<nome_imagem_build>`: Indica a imagem que deve ser utilizada para criar o container.
+* `-p 8080:8080`: Mapeia a porta 8080 da sua máquina para a porta 8080 do container.
