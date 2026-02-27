@@ -1,47 +1,89 @@
-# Multiplataforma (Flutter)
+# Multiplataforma (Dart e Flutter)
 Este guia documenta o processo de utilização de um container docker para isolar o ambiente de desenvolvimento, permitindo criar, testar e buildar sem precisar instalar as ferramentas na máquina física.
 
-## 1. Criando Pacote Pai da Aplicação
-Para que seja possível criar um projeto em Flutter sem depender de ferramentas instaladas na máquina física, vamos precisar mudar a nossa abordagem de criação do projeto. Geralmente é criado o pacote da aplicação e logo após é realizada uma configuração do ambiente de desenvolvimento docker. Mas neste caso vamos precisar inverter essa lógica, primeiro vamos configurar o pacote pai e depois criar o projeto.
+## 1. Configuração do Ambiente CLI (Aliases)
+Será criada uma alias para criar um apelido ao comando e facilitar o uso no terminal (`.bashrc` ou `zshrc`).
+Obs: Será utilizada a imagem (NÃO OFICIAL) cirrusci/flutter:stable por ser a mais estável e mantida para ambientes de CI/CD e Docker.
+```
+# Função padrão para o dia a dia
+d-flutter() {
+    docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:stable flutter "$@" && sudo chown -R $USER:$USER .
+}
 
-* 1. Crie uma pasta pai onde será inserida o projeto.
-* 2. Dentro da pasta pai, será necessário criar uma nova pasta chamada `.devcontainer`.
-* 3. Dentro da pasta .devcontainer, será necessário criar um arquivo chamado `devcontainer.json`.
-* 4. Cole o seguinte conteúdo no arquivo devcontainer.json:
+# Função para atualizar a imagem oficial e limpar tudo (O "Reset de Fábrica")
+# Use isso sempre que aparecerem erros bizarros de Matrix4 ou SDK
+d-flutter-update() {
+    echo "Atualizando imagem Docker do Flutter Stable..."
+    docker pull cirrusci/flutter:stable
+    echo "Limpando caches locais do projeto..."
+    rm -rf .dart_tool/ build/ pubspec.lock
+    docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:stable flutter doctor
+}
 
+d-shell() {
+    docker run -it --rm -v "$(pwd)":/app -w /app cirrusci/flutter:stable bash && sudo chown -R $USER:$USER .
+}
+
+```
+Explicação do principais parâmetros:
+* `-u $(id -u):$(id -g)`: Faz com que os arquivos criados pelo Docker pertença ao seu usuário da máquina e não ao root do container.
+* `-v "$(pwd)":/app`: Faz o mapeamento da pasta atual da sua máquina para o diretório /app do container.
+* `--rm`: Garante que o container seja deletado ao finalizar o comando, economizando espaço em disco.
+
+## 2. Comandos de Gerenciamento e Uso
+| Ação | Comando |
+| :--- | :--- |
+| Criar novo app | `d-flutter create <nome_do_app>` |
+| Baixar dependências | `d-flutter pub get` |
+| Limpar build/cache | `d-flutter clean` |
+| Verificar saúde do SDK | `d-flutter doctor` |
+| Licenças Android | `d-flutter doctor --android-licenses` |
+| Analisar projeto em busca de erro | `d-flutter analyze` |
+| Corrigir permissões (dentro do terminal do container) | `sudo chown -R $USER:$USER .` |
+| Abrir terminal do container | `d-shell` |
+
+Obs: Caso você rodar o `d-flutter doctor` e ver vários problemas [X], não precisa se preocupar, pois só será necessário em tarefas extremamente grandes. <br>
+Obs 2: Quando manipular o projeto dentro do container, você deverá executar `sudo chown -R $USER:$USER .` para enviar as mudanças para a máquina local.
+
+## 3. Desenvolvendo com VS Code (Extensão: Dev Containers)
+É recomendado instalar a extensão `Dev Containers` para ter acesso a suporte da IDE (Autocomplete, Refatoração e Linting).
+
+### Configuração do Projeto (Via terminal do container)
+* #### 1. Crie uma pasta chamada `.devcontainer` na raiz do seu projeto usando: `mkdir .devcontainer && cd ./.devcontainer`.
+* #### 2. Crie o arquivo `devcontainer.json` dentro do diretório .devcontainer usando: `touch devcontainer.json` e depois `nano devcontainer.json` ou somente o `nano devcontainer.json`.
+* #### 3. Note que o seu usuário externo não tem permissão para escrever arquivos, então no terminal dentro do container, no usuário root, execute estes comandos para conseguir escrever e modificar arquivos (Manutenção rápida via terminal do container. `apt update && apt install nano -y`). Obs: Como o container usa a flag --rm, qualquer ferramenta instalada via apt será removida assim que fechar o terminal (exit).
+* #### 3. Coloque este código abaixo dentro do arquivo `devcontainer.json`:
 ```
 {
   "name": "Flutter Dev Container",
   "image": "cirrusci/flutter:stable",
   "remoteUser": "root",
   "workspaceFolder": "/app",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/app,type=bind"
+  ],
   "customizations": {
     "vscode": {
       "extensions": [
-        "Dart-Code.flutter",
-        "Dart-Code.dart-code"
+        "dart-code.flutter",
+        "dart-code.dart-code"
       ],
       "settings": {
-        "dart.flutterSdkPath": "/sdks/flutter",
-        "dart.sdkPath": "/sdks/flutter/bin/cache/dart-sdk"
+        "dart.flutterSdkPath": "/sdks/flutter"
       }
     }
   },
-  "postCreateCommand": "git config --global --add safe.directory /sdks/flutter && flutter doctor"
+  "postCreateCommand": "git config --global --add safe.directory /sdks/flutter && chown -R 1000:1000 /app"
 }
 ```
-
-## 2. Abrir IDE
-Quando realizado a 1 etapa, agora vamos escolher uma IDE conforme sua preferência, no caso desta documentação será escolhido o VScode para Multiplataforma pela quantidade de extensões para auxiliar no desenvolvimento, porém fiquem a vontade para escolher outras IDEs como Intelij, Android Studio, etc.
-
-Obs: Será necessário extensões de desenvolvimento com Docker, como Dev Container e outros.
-
-Se o arquivo .devcontainer estiver na pasta pai, a IDE costuma mostrar um balão no canto inferior direito dizendo: "Folder contains a Dev Container configuration file. Reopen to develop in a container?". Clique em `Reopen`.
-
-Como saber se deu certo? Se você abrir o terminal e notar que o prompt for algo assim `root@f1234567:/app#` em vez de `(seu-usuario@seu-usuario)`. Significa que deu certo.
-
-## 3. Criar Projeto Flutter
-Agora que o ambiente está instalado e configurado, vamos criar o projeto flutter. Aperte Ctrl + Shift + P e escreva `Flutter: New Project`. Após isso será necessário configurar e logo em seguida estará pronto.
+### Como utilizar:
+* Abra o projeto no Vs Code ou no terminal fora do container, vá para o caminho do projeto espelhado e use o comando `code .` para abrir o vscode.
+* Agora, você tem 3 opções de abrir o container do projeto no vscode:
+  * Forma A (Quadrado azul): No canto inferior esquerdo do seu Vs code, existe um ícone azul (parece um ><). Clique nele e selecione "Reopen in Container".
+  * Forma B (O atalho): Aperte Ctrl + Shift + P e digite: `Dev Containers: Reopen in Container`.
+  * Forma C (A notificação): Se o arquivo .devcontainer estiver no projeto, o Vscode costuma mostrar um balão no canto inferior direito dizendo: "Folder contains a Dev Container configuration file. Reopen to develop in a container?". Clique em `Reopen`.
+* Como saber se deu certo? Se você abrir o terminal do vscode e notar que o prompt for algo assim `root@f1234567:/app#` em vez de `(seu-usuario@seu-usuario)`. Significa que deu certo.
+* Vs Code agora opera de dentro do container com todas as ferramentas instaladas.
 
 ## 4. Rodando o App (Flutter WEB) pelo terminal do container
 "Pré-requisito: Limpeza de Cache" Antes de iniciar a aplicação, é necessário realizar uma limpeza dos arquivos temporários. Como o processo de criação inicial pode gerar um cache inconsistente, este procedimento garante que a execução ocorra sem conflitos de permissão ou erros de compilação.
@@ -60,6 +102,11 @@ Obs: Após executar o comando anterior, vai aparecer esta mensagem `Your applica
 Este Dockerfile foi adaptado para gerar builds leves utilizando Multi-stage Build. Obs: Estes comentários são para explicar o passo a passo, mas pode ficar a vontade para remove-los. Todo comentário começa com este símbolo (`#`)
 
 ```
+############################
+#  STAGE-1: BUILD PROCESS  #
+############################
+
+
 # Define a imagem base
 # Flutter e Dart instalados
 # Atribui apelido 'build' para captura de dados
@@ -78,6 +125,9 @@ COPY . .
 # Resultado gerado em build/web
 RUN flutter pub get && flutter build web
 
+#############################
+#  STAGE-2: RUNNER PROCESS  #
+#############################
 
 # Inicia uma imagem Nginx
 # Servidor web
@@ -98,18 +148,31 @@ EXPOSE 80
 CMD ["nginx","-g","daemon off;"]
 ```
 
-## Comandos de Gerenciamento e Uso do Flutter
-| Ação                              | Comando                             |
-| :---                              | :---                                |
-| Baixar dependências               | `flutter pub get`                   |
-| Limpar build/cache                | `flutter clean`                     |
-| Verificar saúde do SDK            | `flutter doctor`                    |
-| Licenças Android                  | `flutter doctor --android-licenses` |
-| Analisar projeto em busca de erro | `flutter analyze`                   |
+## 6. Ciclo de Vida e Manutenção
+| Ação | Comando |
+| :--- | :--- |
+| Listar ativos | `docker ps` |
+| Ver todos | `docker ps -a` |
+| Parar | `docker stop <ID_ou_Nome>` |
+| Iniciar | `docker start <ID_ou_Nome>` |
+| Reiniciar | `docker restart <ID_ou_Nome>` |
+| Logs | `docker logs -f <ID_ou_Nome>` |
 
-## Gerar o app (Terminal do container)
-| Ação          | Comando                       |
-| :---          | :---                          |
-| Android       | `flutter build apk --release` |
-| Web           | `flutter build web`           |
-| Desktop Linux | `flutter build linux`         |
+## 7. Processo para Buildar a Aplicação (Web e Android)
+Só será possível buildar a aplicação de duas formas, sendo web e android, pois elas não precisam necessariamente de todas as configurações e dependências do flutter. 
+Enquanto buildar para window, linux e ios precisa de todas as ferramentas necessárias (nesses casos, recomendo baixar as ferramentas diretamente na sua máquina).
+
+### Buildar construção Dockerfile e executa
+| Ação | Comando |
+| :--- | :--- |
+| Buildar | `docker build -t meu-app-flutter:prod .` |
+| Rodar | `docker run -d -p 9000:80 --name app-producao meu-app-flutter:prod` |
+| Host | `http://localhost:9000` |
+| Baixar imagem manualmente | `docker pull nginx:alpine` |
+| Reiniciar docker | `sudo systemctl restart docker` |
+
+### Gerar o app
+| Ação | Comando |
+| :--- | :--- |
+| Android | `d-flutter build apk` |
+| Web | `d-flutter build web` |
