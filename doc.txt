@@ -1,0 +1,24 @@
+2. O Desafio do Build Multiplataforma (Android e Desktop)
+
+Aqui entra um ponto importante para sua documentação: O build requer ferramentas diferentes.
+
+    Para Web: A imagem cirrusci/flutter:stable já tem tudo. Basta rodar flutter build web.
+
+    Para Android: Essa imagem já costuma vir com o Android SDK. Para gerar o .apk ou .aab, o usuário rodará flutter build apk dentro do terminal do VS Code (que já estará dentro do container).
+
+    Para Desktop (Linux): Aqui está o "pulo do gato". Para compilar para Linux Desktop, o Flutter exige bibliotecas do sistema (como libgtk-3-dev, pkg-config, etc.).
+
+        Sugestão: Se o build for falhar por falta de dependências, adicione no seu postCreateCommand a instalação dessas libs:
+        "postCreateCommand": "apt-get update && apt-get install -y libgtk-3-dev liblzma-dev libstdc++-12-dev && flutter config --enable-linux-desktop"
+
+
+
+Momento B: Gerando os Apps (Build)
+
+Instrua o usuário a usar o terminal integrado do VS Code para gerar os binários:
+
+    flutter build apk (Para Android)
+
+    flutter build web (Para Web)
+
+    flutter build linux (Para Desktop Linux)
