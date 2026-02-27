@@ -26,6 +26,7 @@ Obs: Este documento foi criado para utilizar em projetos acadêmicos, portanto A
 | Iniciar         | `docker start <id_ou_nome>`           | Inicia um container que foi parado                     |
 | Reiniciar       | `docker restart <id_ou_nome>`         | Reinicia o container                                   |
 | Matar           | `docker kill <id_ou_nome>`            | Mata a execução do container                           |
+| Reinicia Docker | `sudo systemctl restart docker`       | Reinicia o Docker da máquina                           |  
 ---
 ## COMANDOS DE LIMPEZA
 | Ação            | Comando                               | Descrição                                              |
