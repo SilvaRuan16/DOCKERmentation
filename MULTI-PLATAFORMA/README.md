@@ -62,8 +62,8 @@ Agora que o ambiente está instalado e configurado, vamos criar o projeto flutte
 `flutter pub get`
 * Após isso, siga as instruções abaixo:
 Por o Docker criar container de forma isolada, a visualização precisará ser feita via Web Server. <br>
-`flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080`. <br>
-Obs: Após executar o comando anterior, vai aparecer esta mensagem `Your application running on port 8080 is available. See all forwarded ports`, será necessário clicar no botão azul `Open in Browser` ou acesse em seu navegador: `http://localhost:8080` | `http://localhost:8080/#/`.
+`flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8070`. <br>
+Obs: Após executar o comando anterior, vai aparecer esta mensagem `Your application running on port 8070 is available. See all forwarded ports`, será necessário clicar no botão azul `Open in Browser` ou acesse em seu navegador:`http://localhost:8070/#/`.
 
 ## 5. Docker para para Produção (Dockerfile)
 Este Dockerfile foi adaptado para gerar builds leves utilizando Multi-stage Build. Obs: Estes comentários são para explicar o passo a passo, mas pode ficar a vontade para remove-los. Todo comentário começa com este símbolo (`#`)
