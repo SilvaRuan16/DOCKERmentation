@@ -15,6 +15,13 @@ Para que seja possível criar um projeto em Flutter sem depender de ferramentas 
   "image": "cirrusci/flutter:stable",
   "remoteUser": "root",
   "workspaceFolder": "/app",
+  "mounts": [
+    {
+      "source": "${localWorkspaceFolder}",
+      "target": "/app",
+      "type": "bind"
+    }
+  ],
   "customizations": {
     "vscode": {
       "extensions": [
@@ -23,11 +30,13 @@ Para que seja possível criar um projeto em Flutter sem depender de ferramentas 
       ],
       "settings": {
         "dart.flutterSdkPath": "/sdks/flutter",
-        "dart.sdkPath": "/sdks/flutter/bin/cache/dart-sdk"
+        "dart.sdkPath": "/sdks/flutter/bin/cache/dart-sdk",
+	      "dart.chromePort": 8070
       }
     }
   },
-  "postCreateCommand": "git config --global --add safe.directory /sdks/flutter && flutter doctor"
+  "forwardPorts": [8070],
+  "postCreateCommand": "apt-get update && apt-get install -y libgtk-3-dev liblzma-dev libstdc++-12-dev pkg-config && git config --global --add safe.directory /sdks/flutter && flutter config --enable-web --enable-linux-desktop"
 }
 ```
 
@@ -97,6 +106,24 @@ EXPOSE 80
 # daemon off para que o container continue ativo
 CMD ["nginx","-g","daemon off;"]
 ```
+
+## Buildar e Rodar
+Navege até a raiz do seu projeto onde está o Dockerfile e execute este comando: <br>
+`docker build -t <nome_imagem_build> .`
+
+* `build`: Cria uma nova imagem a partir de um arquivo (Dockerfile).
+* `-t <nome_imagem_build>`: Atribui um nome personalizado (tag) para a imagem criada a fim de não gerenciar ela pelo o ID.
+* `.`: Indica que o contexto do build (arquivos src, pom.xml, outros) está na pasta atual.
+
+Após o build terminar, você poderá subir o container usando o comando: <br>
+* Rodar via Servidor (Web): `docker run -p 8090:80 --rm --name <nome_container> <nome_imagem_build>`
+
+* `run`: Cria e inicia um container a partir de uma imagem.
+* `-it`: Cria um terminal interativo.
+* `--rm`: Deleta o container assim que encerrado.
+* `--name <nome_container>`: Atribui um nome específico ao container rodando. Ex: Nome do container => `flutter-exec`
+* `<nome_imagem_build>`: Indica a imagem que deve ser utilizada para criar o container.
+* `-p 8090:80`: Mapeia a porta 8090 da sua máquina para a porta 80 do container.
 
 ## Comandos de Gerenciamento e Uso do Flutter
 | Ação                              | Comando                             |
