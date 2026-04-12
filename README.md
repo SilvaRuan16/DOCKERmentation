@@ -41,3 +41,16 @@ Obs: Este documento foi criado para utilizar em projetos acadêmicos, portanto A
 | Acessar Bash     | `docker exec -it <nome_do_container> bash` | Abre terminal interativo bash do container        |
 | Acessar SH       | `docker exec -it <nome_do_container> sh`   | Abre um terminal simples                          |
 | Sair do Terminal | `exit`                                     | Sai do modo interativo e volta para sua máquina   |
+
+## GERENCIAMENTO DO DOCKER - COMPOSE
+| Comando                   | Ação                                                      |
+| :---                      | :---                                                      |
+| `docker-compose up`       | Cria e inicia os contêiners                               |
+| `docker-compose build`    | Realiza a etapa de build das imagens que serão utilizadas |
+| `docker-compose logs`     | Visualiza os logs dos contêiners                          |
+| `docker-compose restart`  | Reinicia os contêiners                                    |
+| `docker-compose ps`       | Lista os contêiners                                       |
+| `docker-compose scale`    | Permite aumentar o número de réplicas de um contêiner     |
+| `docker-compose start`    | Inicia os contêiners                                      |
+| `docker-compose stop`     | Paralisa os contêiners                                    |
+| `docker-compose down`     | Paralisa e remove todos os contêiners (tudo)              |
