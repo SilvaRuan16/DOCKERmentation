@@ -43,14 +43,14 @@ Obs: Este documento foi criado para utilizar em projetos acadêmicos, portanto A
 | Sair do Terminal | `exit`                                     | Sai do modo interativo e volta para sua máquina   |
 
 ## GERENCIAMENTO DO DOCKER - COMPOSE
-| Comando                   | Ação                                                      |
-| :---                      | :---                                                      |
-| `docker-compose up`       | Cria e inicia os contêiners                               |
-| `docker-compose build`    | Realiza a etapa de build das imagens que serão utilizadas |
-| `docker-compose logs`     | Visualiza os logs dos contêiners                          |
-| `docker-compose restart`  | Reinicia os contêiners                                    |
-| `docker-compose ps`       | Lista os contêiners                                       |
-| `docker-compose scale`    | Permite aumentar o número de réplicas de um contêiner     |
-| `docker-compose start`    | Inicia os contêiners                                      |
-| `docker-compose stop`     | Paralisa os contêiners                                    |
-| `docker-compose down`     | Paralisa e remove todos os contêiners (tudo)              |
+| Comando                        | Ação                                                      |
+| :---                           | :---                                                      |
+| `docker compose up --build -d` | Cria e inicia os contêiners                               |
+| `docker compose build`         | Realiza a etapa de build das imagens que serão utilizadas |
+| `docker compose logs`          | Visualiza os logs dos contêiners                          |
+| `docker compose restart`       | Reinicia os contêiners                                    |
+| `docker compose ps`            | Lista os contêiners                                       |
+| `docker compose scale`         | Permite aumentar o número de réplicas de um contêiner     |
+| `docker compose start`         | Inicia os contêiners                                      |
+| `docker compose stop`          | Paralisa os contêiners                                    |
+| `docker compose down`          | Paralisa e remove todos os contêiners (tudo)              |
