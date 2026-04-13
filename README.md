@@ -47,10 +47,10 @@ Obs: Este documento foi criado para utilizar em projetos acadêmicos, portanto A
 | :---                           | :---                                                      |
 | `docker compose up --build -d` | Cria e inicia os contêiners                               |
 | `docker compose build`         | Realiza a etapa de build das imagens que serão utilizadas |
-| `docker compose logs`          | Visualiza os logs dos contêiners                          |
+| `docker compose logs -f app`   | Visualiza os logs dos contêiners                          |
 | `docker compose restart`       | Reinicia os contêiners                                    |
 | `docker compose ps`            | Lista os contêiners                                       |
 | `docker compose scale`         | Permite aumentar o número de réplicas de um contêiner     |
 | `docker compose start`         | Inicia os contêiners                                      |
 | `docker compose stop`          | Paralisa os contêiners                                    |
-| `docker compose down`          | Paralisa e remove todos os contêiners (tudo)              |
+| `docker compose down -v`       | Paralisa e remove todos os contêiners (tudo)              |
