@@ -7,7 +7,7 @@ Essa documentação contém:
 Esta documentação visa fornecer executaveis CLI (COMMAND LINE INTERFACE) e arquivos DOCKER para as seguintes áreas e suas ferramentas:
 * MULTIPLATAFORMA => Flutter
 * BACKEND         => Java
-* DATABASE        => Postgresql, Mysql/MariaDB
+* DATABASE        => Postgresql, Mysql/MariaDB, Mongodb
 
 Obs: Este documento foi criado para utilizar em projetos acadêmicos, portanto ATENÇÃO.
 ---
