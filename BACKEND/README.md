@@ -1,116 +1,72 @@
 # Ferramentas Dockerizadas para Backend
-Esta parte do guia mostrará como criar ambientes dockerizados para desenvolvimento, build e execução de suas aplicações, sendo as ferramentas mencionadas: Java  na versão 21.
+Esta sessão fornecerá explicação e containers prontos para utilização das ferramentas: Java, Php e Node.
 
 ## Java
-Java é uma linguagem de programação orientada a objetos fortemente tipada, suas principais caracteristicas são sua segurança e robustez, desempenho, independente de plataforma e como mencionada anteriormente, orientação a objetos.
+O Java é uma linguagem de programação multiplataforma e orientada a objetos que opera sob o famoso princípio "escreva uma vez, rode em qualquer lugar" (write once, run anywhere). Por conta de sua alta segurança e escalabilidade, ela é amplamente utilizada no desenvolvimento de sistemas corporativos robustos, aplicativos Android e APIs de grande porte no backend.
 
-## Criar projeto Java
-Acesse este site para criar o projeto: [Spring Initializr](https://start.spring.io/).
-obs: Esta documentação foi pensada para a versão 21 do Java junto ao Maven e Spring Boot.
-
-## Dockerfile para aplicações em Java e Desenvolvendo com VS Code (Extensão: Dev Containers) e Intelij (Docker)
-Nesta etapa, mostraremos como usar o docker para desenvolvimento, build e execução.
-
-Para prosseguir, será necessário baixar as extensões mostradas no titulo do capitulo.
-
-### Configuração do Projeto
-* #### 1. Crie uma pasta chamada `.devcontainer` na raiz do seu projeto.
-* #### 2. Crie o arquivo `devcontainer.json` dentro do diretório .devcontainer.
-* #### 3. Coloque este código abaixo dentro do arquivo `devcontainer.json`:
-```
-{
-  "name": "Java 21 Dev Container",
-  "image": "mcr.microsoft.com/devcontainers/java:21",
-  "remoteUser": "root",
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-  "mounts": [
-    "source=${localEnv:HOME}/.m2,target=/home/vscode/.m2,type=bind"
-  ],
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "vscjava.vscode-java-pack",
-        "vscjava.vscode-spring-boot-dashboard",
-        "vscjava.vscode-java-dependency"
-      ],
-      "settings": {
-        "java.configuration.runtimes": [
-          {
-            "name": "JavaSE-21",
-            "path": "/opt/java/openjdk",
-            "default": true
-          }
-        ]
-      }
-    }
-  }
-}
-
-```
-### Como utilizar:
-* Abra o projeto no Vs Code ou no Intelij.
-* Possue várias formas de abrir o projeto do container na IDE, mas será mostrado somente um deles pois é o mais fácil:
-  * Notificação: Se o arquivo .devcontainer estiver no projeto, a IDE costuma mostrar um balão no canto inferior direito dizendo: "Folder contains a Dev Container configuration file. Reopen to develop in a container?". Clique em `Reopen in Container`.
-* Como saber se deu certo? Se você abrir o terminal do vscode e notar que o prompt for algo assim `root@f1234567:/app#` em vez de `(seu-usuario@seu-usuario)`. Significa que deu certo.
-* Agora a IDE opera de dentro do container com todas as ferramentas instaladas.
-
-## Build Final Dockerfile para produção
-Para diminuir o tamanho da imagem ao buildar a aplicação, será seguida passo a passo do Dockerfile Multi-Stage seguindo a lógica: "Você desenvolve no container pesado (JDK), mas gera uma imagem final leve (JRE) que conterá apenas o necessário para rodar a aplicação."
-
-### Crie um arquivo chamado `Dockerfile` na raiz do seu projeto e cole o seguinte script: <br>
-
-```
-# 1 Etapa: Compilação
-# Será utilizado o JDK (Java Development Kit) para transformar o código em .jar
-FROM eclipse-temurin:21-jdk-alpine AS builder
-
-# Define o diretório de trabalho
+```bash
+FROM docker.io/library/eclipse-temurin:25-jdk-alpine AS builder
 WORKDIR /build
-
-# Copia os arquivos de configuração do Maven/Gradle primeiro para otimizar cache
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
-
-# Atribui permissão de execução ao arquivo
 RUN chmod +x mvnw
-
 RUN ./mvnw dependency:go-offline
-
-# Copia o código fonte e gera o executável
 COPY src ./src
 RUN ./mvnw clean package -DskipTests
 
-# 2 Etapa: Execução
-# Será utilizado o JRE (Java Runtime Environment) para reduzir o tamanho final, já que o JRE é muito menor
-FROM eclipse-temurin:21-jre-alpine
-
-# Define o diretório de trabalho para execução
+FROM docker.io/library/eclipse-temurin:25-jre-alpine
 WORKDIR /app
-
-# Copia o artefato do estágio anterior
 COPY --from=builder /build/target/*.jar app.jar
-
-# Define a porta que será executada
 EXPOSE 8080
-
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
-## Buildar e Rodar
-Navege até a raiz do seu projeto onde está o Dockerfile e execute este comando: <br>
-`docker build -t <nome_imagem_build> .`
+## Php
+O PHP é uma das linguagens de script mais utilizadas no mundo para o desenvolvimento web, sendo executada do lado do servidor para gerar conteúdo dinâmico em sites e aplicações. Sua grande popularidade se deve à facilidade de integração com diversos bancos de dados e à robustez com que sustenta desde pequenos blogs até grandes plataformas globais.
 
-* `build`: Cria uma nova imagem a partir de um arquivo (Dockerfile).
-* `-t <nome_imagem_build>`: Atribui um nome personalizado (tag) para a imagem criada a fim de não gerenciar ela pelo o ID.
-* `.`: Indica que o contexto do build (arquivos src, pom.xml, outros) está na pasta atual.
+```bash
+FROM php:8.2-cli-alpine AS builder
+WORKDIR /var/www
+RUN apk --no-cache git unzip libzip-dev icu-dev libpng-dev
+RUN docker-php-ext-install zip intl gd
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-plugins --no-scripts
+COPY . .
 
-Após o build terminar, você poderá subir o container usando o comando: <br>
-* Rodar localmente via terminal: `docker run -it --rm --name <nome_container> <nome_imagem_build>`
-* Rodar via Servidor (Web): `docker run -p 8080:8080 --rm --name <nome_container> <nome_imagem_build>`
+FROM php:8.2-fpm-alpine AS production
+WORKDIR /var/www
+RUN apk add --no-cache icu-dev libzip-dev libpng-dev && docker-php-ext-install intl zip pdo_mysql gd && opcache
+COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY --from=builder --chown=www-data:www-data /var/www /var/www
+USER www-data
+EXPOSE 9000
+CMD ["php-fpm]
+```
 
-* `run`: Cria e inicia um container a partir de uma imagem.
-* `-it`: Cria um terminal interativo.
-* `--rm`: Deleta o container assim que encerrado.
-* `--name <nome_container>`: Atribui um nome específico ao container rodando. Ex: Nome do container => `app-terminal`
-* `<nome_imagem_build>`: Indica a imagem que deve ser utilizada para criar o container.
-* `-p 8080:8080`: Mapeia a porta 8080 da sua máquina para a porta 8080 do container.
+## Node
+O Node.js é um ambiente de execução JavaScript assíncrono e orientado a eventos, projetado para criar aplicações de rede escaláveis e de alta performance. Baseado no motor V8 do Google Chrome, ele permite que desenvolvedores utilizem a mesma linguagem tanto no front-end quanto no back-end de forma eficiente.
+
+```bash
+FROM node:20-alpine AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npm run build
+RUN npm prune --production && npm cache clean --force
+
+FROM node:20-alpine AS runner
+ENV NODE_ENV=production
+USER node
+COPY --from=builder --chown=node:node /app/package*.json ./
+COPY --from=builder --chown=node:node /app/node_modules ./node_modules
+COPY --from=builder --chown=node:node /app/dist ./dist
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+```

@@ -10,7 +10,7 @@ Será abordado banco de dados:
 
 ### Comando para utilizar o Postgresql via container
 
-```
+```bash
 docker run --name postgres-db \
 -e POSTGRES_PASSWORD=minhasenha \
 -e POSTGRES_USER=meuusuario \
@@ -33,7 +33,7 @@ docker run --name postgres-db \
 
 ### Comando para utilizar o Mysql via container
 
-```
+```bash
 docker run --name mysql-db \
 -e MYSQL_ROOT_PASSWORD=minhasenha \
 -e MYSQL_USER=seuusuario \
@@ -55,7 +55,7 @@ docker run --name mysql-db \
 O MariaDB é um sistema de gerenciamento de banco de dados relacional de código aberto, desenvolvido pelos criadores originais do MySQL como uma alternativa robusta, rápida e totalmente compatível com ele. Ele é amplamente utilizado no mercado devido ao seu alto desempenho, recursos avançados de segurança e uma comunidade ativa que garante constantes inovações.
 
 ### Comandos para utilizar o Mariadb via container
-```
+```bash
 docker run --name maria-db \
 -e MARIADB_ROOT_PASSWORD=suasenha \
 -e MARIADB_DATABASE=meubanco \
@@ -81,7 +81,7 @@ docker run --name maria-db \
 ## MongoDB (Documentar)
 O MongoDB é um banco de dados NoSQL orientado a documentos que armazena informações em formatos flexíveis semelhantes ao JSON, em vez de tabelas e linhas tradicionais. Ele é altamente escalável e ideal para lidar com grandes volumes de dados não estruturados, permitindo modificações rápidas na estrutura dos dados sem a necessidade de migrações complexas.
 
-```
+```bash
 docker run -d \
 --name mongo-db \ 
 -p 27017:27017 \ 

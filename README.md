@@ -1,15 +1,18 @@
-# AMBIENTE DE DESENVOLVIMENTO DOCKERIZADO
-Este guia fornece instruções para implantação, gerenciamento e limpeza de ambientes de desenvolvimento utilizando o docker. <br>
-Essa documentação contém:
-* Explicação e comandos via docker.
-* Locais de pesquisas: Docker Hub, Pesquisas no Google, Youtube, Reddit e Gemini.
+# DOCKER PARA BACKEND
+Este documento tem como objetivo explicar e fornecer modelos de container para ambientes de desenvolvimento com docker, evitando ouvir a famosa frase: "Na minha máquina funciona".
 
-Esta documentação visa fornecer executaveis CLI (COMMAND LINE INTERFACE) e arquivos DOCKER para as seguintes áreas e suas ferramentas:
-* MULTIPLATAFORMA => Flutter
-* BACKEND         => Java
-* DATABASE        => Postgresql, Mysql/MariaDB, Mongodb
+Será fornecido algumas ferramentas ao longo desta ferramenta, sendo elas:
+| Ferramenta    | Versão    |
+| :--           | :--       |
+| `Java`        | 25        |
+| `PHP`         | 8.2       |
+| `Node`        | latest    |
+| `Postgres`    | latest    |
+| `Mysql`       | latest    |
+| `MariaDB`     | latest    |
+| `MongoDB`     | latest    |
+| `ScyllaDB`    | latest    |
 
-Obs: Este documento foi criado para utilizar em projetos acadêmicos, portanto ATENÇÃO.
 ---
 ## COMANDOS GLOBAIS DE MONITORAMENTO
 | Ação            | Comando                               | Descrição                                              |
